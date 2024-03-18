@@ -4,7 +4,7 @@ FROM fedora:39@sha256:61864fd19bbd64d620f338eb11dae9e8759bf7fa97302ac6c43865c48d
 RUN yum -y upgrade && \
     yum -y install \
         # Terminal
-        tmux screen htop ncdu watch pv \
+        tmux screen htop ncdu pv \
         # Shell
         bash-completion vim nano less \
         # Network
