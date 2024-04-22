@@ -12,4 +12,5 @@ RUN yum -y upgrade && \
         iputils iperf3 tcpdump traceroute ncat telnet bind-utils \
         # System
         procps-ng lsof fio jq git zip unzip \
+        perf psmisc hostname iproute sysstat iotop
     && yum clean all
