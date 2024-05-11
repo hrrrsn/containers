@@ -12,7 +12,7 @@ RUN yum upgrade -y; \
     mkdir -p /run/php-fpm/; \
     chgrp -R 0 /etc/caddy /run;\
     chmod -R g=u /etc/caddy /run; \
-    echo "<?php phpinfo(); ?>" > /usr/share/caddy/index.php
+    echo "<?php phpinfo(); ?>" > /usr/share/caddy/phpinfo.php
 
 EXPOSE 8080
 
