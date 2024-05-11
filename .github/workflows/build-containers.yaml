@@ -82,7 +82,9 @@ jobs:
 
       - name: Push Docker image
         run: |
+          docker rmi ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }}
           docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}
+          docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}-${{ env.BASE_IMAGE_TAG }}
           docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
           docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
