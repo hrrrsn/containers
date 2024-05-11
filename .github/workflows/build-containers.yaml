@@ -65,6 +65,7 @@ jobs:
             context: ./docker/${{ matrix.dir }}
             push: true
             tags: |
+                ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.COMMIT_HASH }}
                 ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
                 ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
                 ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest

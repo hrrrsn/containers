@@ -6,6 +6,7 @@ COPY entry.sh /entry.sh
 RUN yum upgrade -y; \
     yum install -y rsync nginx procps gettext; \
     yum module install php:8.2/common -y; \
+    yum install -y php-cli php-gd php-intl php-mysqlnd php-pdo php-pgsql php-xml php-opcache; \
     yum clean all -y; \
     mkdir -p /run/php-fpm/; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
