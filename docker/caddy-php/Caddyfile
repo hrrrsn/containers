@@ -3,7 +3,6 @@
 # https://caddyserver.com/docs/caddyfile
 
 {
-
     http_port 8080
     auto_https off
 }

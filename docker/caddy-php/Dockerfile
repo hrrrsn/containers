@@ -15,4 +15,4 @@ RUN yum upgrade -y; \
 
 EXPOSE 8080
 
-CMD ["/usr/bin/caddy", "run"]
+ENTRYPOINT ["/usr/bin/caddy", "run"]
