@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       directory:
-        description: 'Container directory to rebuild (leave blank for all)'
+        description: 'Container directory to rebuild'
         required: false
         default: 'all'
 
@@ -86,6 +86,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.semver.outputs.next_version }}
-            ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ GITHUB_SHA }}
             ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
+            ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
+            ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest
            
