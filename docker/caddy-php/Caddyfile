@@ -3,7 +3,6 @@
 # https://caddyserver.com/docs/caddyfile
 
 {
-    http_port 8080
     auto_https off
 }
 
@@ -14,8 +13,7 @@
 # specification.
 #
 # https://caddyserver.com/docs/caddyfile/concepts#addresses
-http:// {
-
+:8080 {
     # Set this path to your site's directory.
     root * /usr/share/caddy
 
@@ -29,7 +27,7 @@ http:// {
     encode zstd gzip
 
     # Configures multiple PHP-related settings
-    php_fastcgi unix://run/php-fpm/www.sock
+    php_fastcgi unix//run/php-fpm/www.sock
 
     # Prevent access to dot-files, except .well-known
     @dotFiles {  
