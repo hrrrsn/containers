@@ -68,13 +68,13 @@ jobs:
             context: ./docker/${{ matrix.dir }}
             push: false
             load: true
-            tags: build:${{ github.run_id }}
+            tags: ghcr.io/${{ github.repository }}:${{ github.run_id }}
 
-      - name: Determine Dynamic Tag
+      - name: Determine Tag
         id: dynamic-tag
         run: |
           tag_command=$(cat ./docker/${{ matrix.dir }}/tag-stream)
-          container_id=$(docker create build:${{ github.run_id }})
+          container_id=$(docker create ghcr.io/${{ github.repository }}:${{ github.run_id }})
           docker start $container_id
           tag=$(docker exec $container_id $tag_command)
           echo "::set-output name=dynamic_tag::$tag"
@@ -82,9 +82,9 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker tag build:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}
-          docker tag build:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
-          docker tag build:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
-          docker tag build:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest
+          docker tag ghcr.io/${{ github.repository }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}
+          docker tag ghcr.io/${{ github.repository }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
+          docker tag ghcr.io/${{ github.repository }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
+          docker tag ghcr.io/${{ github.repository }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push ghcr.io/${{ github.repository }} --all-tags
