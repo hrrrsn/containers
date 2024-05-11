@@ -25,6 +25,9 @@ jobs:
             manifest=$(docker manifest inspect $image_name || echo "{}")
             has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
             archs='"amd64"'
+            if [[ $has_arm64 == "true" ]]; then
+              archs='"amd64", "arm64"'
+            fi
             matrix_entry="{\"dir\": \"$dir\", \"arch\": [$archs]}"
             matrix="${matrix}${matrix:+,}${matrix_entry}"
           done
@@ -58,7 +61,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Determine Next Semantic Version
         id: semver
         run: |
