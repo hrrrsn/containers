@@ -71,7 +71,9 @@ jobs:
         id: semver
         run: |
           image_name="ghcr.io/${{ github.repository }}/${{ matrix.dir }}"
-          tags=$(ghcr-cli list tags --image $image_name)
+          echo "Fetching tags for $image_name"
+          tags=$(skopeo list-tags docker://$image_name --tls-verify=false | jq -r '.Tags[]' | sort -V)
+          echo "Tags: $tags"
           latest_semver=$(echo "$tags" | grep -oP '1\.\d+' | sort -V | tail -n1)
           if [ -z "$latest_semver" ]; then
             echo "::set-output name=next_version::1.0"
