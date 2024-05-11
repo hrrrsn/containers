@@ -30,7 +30,7 @@ http:// {
     encode zstd gzip
 
     # Configures multiple PHP-related settings
-    php_fastcgi unix//run/php-fpm/www.sock
+    php_fastcgi unix://run/php-fpm/www.sock
 
     # Prevent access to dot-files, except .well-known
     @dotFiles {  
