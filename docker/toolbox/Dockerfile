@@ -11,6 +11,6 @@ RUN yum -y upgrade && \
         wget mtr openssh-clients net-tools rsync \
         iputils iperf3 tcpdump traceroute ncat telnet bind-utils \
         # System
-        procps-ng lsof fio jq git zip unzip \
+        procps-ng lsof fio jq git zip unzip stress \
         perf psmisc hostname iproute sysstat iotop \
     && yum clean all
