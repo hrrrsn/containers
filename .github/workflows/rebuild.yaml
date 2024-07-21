@@ -53,6 +53,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: image=moby/buildkit:master,network=host
 
       - name: Extract base image tag from Dockerfile
         run: |
@@ -71,6 +74,7 @@ jobs:
         with:
             context: ./docker/${{ matrix.dir }}
             push: false
+            platforms: ${{ matrix.platforms }}
             load: true
             tags: ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }}
 
