@@ -32,9 +32,13 @@ jobs:
               manifest=$(docker manifest inspect $image_name || echo "{}")
               has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
               archs='"amd64"'
-              matrix_entry="{\"dir\": \"$dir\", \"arch\": [$archs]}"
+              platforms="linux/amd64"
+              if [[ $has_arm64 == "true" ]]; then
+                platforms="linux/amd64,linux/arm64"
+              fi
+              matrix_entry="{\"dir\": \"$dir\", \"platforms\": \"$platforms\"}"
               matrix="${matrix}${matrix:+,}${matrix_entry}"
-            fi
+              fi
           done
           matrix="{\"include\": [$matrix]}"
           echo "Matrix: $matrix"
