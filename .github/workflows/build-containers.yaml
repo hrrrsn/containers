@@ -24,11 +24,11 @@ jobs:
             image_name=$(grep 'FROM' ./docker/$dir/Dockerfile | awk '{print $2}' | head -n 1)
             manifest=$(docker manifest inspect $image_name || echo "{}")
             has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
-            platforms="linux/amd64"
+            archs='"amd64"'
             if [[ $has_arm64 == "true" ]]; then
-              platforms="linux/amd64,linux/arm64"
+              archs='"amd64", "arm64"'
             fi
-            matrix_entry="{\"dir\": \"$dir\", \"platforms\": \"$platforms\"}"
+            matrix_entry="{\"dir\": \"$dir\", \"arch\": [$archs]}"
             matrix="${matrix}${matrix:+,}${matrix_entry}"
           done
           matrix="{\"include\": [$matrix]}"
@@ -49,9 +49,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-          driver-opts: image=moby/buildkit:master,network=host
 
       - name: Extract base image tag from Dockerfile
         run: |
