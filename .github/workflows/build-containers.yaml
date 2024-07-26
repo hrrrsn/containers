@@ -130,7 +130,7 @@ jobs:
           if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
             docker push $dynamic_tag
             docker push $dynamic_base_tag
-
+          
           docker rmi $temp_tag
 
       - name: Clean up Docker images
