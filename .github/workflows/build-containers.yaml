@@ -124,14 +124,8 @@ jobs:
             docker tag $temp_tag $dynamic_base_tag
           fi
 
-          docker push $base_image_tag
-          docker push $latest_tag
-
-          if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
-            docker push $dynamic_tag
-            docker push $dynamic_base_tag
-          
           docker rmi $temp_tag
+          docker push $latest_tag
 
       - name: Clean up Docker images
         run: docker image prune -f
