@@ -1,14 +1,17 @@
 FROM fedora:41@sha256:3cc404e4736e4c73b234798f6941b4de70ea98087989a3c718d5f6303682447a
 
+LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
+LABEL org.opencontainers.image.description="Fedora image with useful utilities"
+
 # Toolbox container
 RUN yum -y upgrade && \
     yum -y install \
         # Terminal
-        tmux screen htop ncdu pv \
+        tmux screen htop ncdu pv tree mc \
         # Shell
         bash-completion vim nano less \
         # Network
-        wget mtr openssh-clients net-tools rsync \
+        wget mtr openssh-clients net-tools rsync nmap httpie nc \
         iputils iperf3 tcpdump traceroute ncat telnet bind-utils \
         # System
         procps-ng lsof fio jq git zip unzip stress \
