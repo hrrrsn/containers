@@ -86,48 +86,14 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./docker/${{ matrix.container.dir }}
-          load: true
+          push: true
           platforms: ${{ join(matrix.container.platforms, ',') }}
-          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_number }}-${{ env.COMMIT_HASH }}
-
-      - name: Determine dynamic tag
-        id: dynamic-tag
-        run: |
-          if [[ -f ./docker/${{ matrix.container.dir }}/tag-stream ]]; then
-            echo "tag-stream file found, determining dynamic tag..."
-            tag_command=$(cat ./docker/${{ matrix.container.dir }}/tag-stream)
-            container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp)
-            docker start $container_id
-            tag=$(docker exec $container_id $tag_command)
-            echo "DYNAMIC_TAG=$tag" >> $GITHUB_ENV
-            echo "DYNAMIC_TAG: $tag"
-            docker rm -f $container_id
-          else
-            echo "No tag-stream file found, skipping dynamic tag."
-            echo "DYNAMIC_TAG=" >> $GITHUB_ENV
-          fi
-
-      - name: Tag and push Docker images
-        run: |
-          image_name="ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}"
-          temp_tag="${image_name}:${{ github.run_number }}-${{ env.COMMIT_HASH }}"
-          base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
-          latest_tag="${image_name}:latest"
-
-          docker tag $temp_tag $base_image_tag
-          docker tag $temp_tag ${image_name}:latest
-
-          if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
-            dynamic_tag="${image_name}:${{ env.DYNAMIC_TAG }}"
-            dynamic_base_tag="${dynamic_tag}-${{ env.BASE_IMAGE_TAG }}"
-            docker tag $temp_tag $dynamic_tag
-            docker tag $temp_tag $dynamic_base_tag
-          fi
-
-          docker image ls
-
-          # docker rmi $temp_tag
-          docker push $latest_tag
+          tags: |
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:latest
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.COMMIT_HASH }}
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ github.run_number }}
 
       - name: Clean up Docker images
         run: docker image prune -f
