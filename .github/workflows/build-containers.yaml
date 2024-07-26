@@ -89,14 +89,14 @@ jobs:
           push: false
           load: true
           platforms: ${{ join(matrix.container.platforms, ',') }}
-          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }}
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp
 
       - name: Determine dynamic tag
         id: dynamic-tag
         run: |
           if [[ -f ./docker/${{ matrix.container.dir }}/tag-stream ]]; then
             tag_command=$(cat ./docker/${{ matrix.container.dir }}/tag-stream)
-            container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }})
+            container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp)
             docker start $container_id
             tag=$(docker exec $container_id $tag_command)
             echo "DYNAMIC_TAG=$tag" >> $GITHUB_ENV
@@ -108,27 +108,28 @@ jobs:
       - name: Tag and push Docker images
         run: |
           image_name="ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}"
-          run_id_tag="${image_name}:${{ github.run_id }}"
+          temp_tag="${image_name}:temp"
           base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
           latest_tag="${image_name}:latest"
 
-          docker tag $run_id_tag $base_image_tag
-          docker tag $run_id_tag $latest_tag
+          docker tag $temp_tag $base_image_tag
+          docker tag $temp_tag $latest_tag
 
           if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
             dynamic_tag="${image_name}:${{ env.DYNAMIC_TAG }}"
-            dynamic_base_tag="${image_name}:${{ env.DYNAMIC_TAG }}-${{ env.BASE_IMAGE_TAG }}"
-            docker tag $run_id_tag $dynamic_tag
-            docker tag $run_id_tag $dynamic_base_tag
+            dynamic_base_tag="${dynamic_tag}-${{ env.BASE_IMAGE_TAG }}"
+            docker tag $temp_tag $dynamic_tag
+            docker tag $temp_tag $dynamic_base_tag
           fi
 
-          docker push $run_id_tag
           docker push $base_image_tag
           docker push $latest_tag
 
           if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
             docker push $dynamic_tag
             docker push $dynamic_base_tag
+
+          docker rmi $temp_tag
 
       - name: Clean up Docker images
         run: docker image prune -f
