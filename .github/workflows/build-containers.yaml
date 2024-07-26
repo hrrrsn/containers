@@ -87,6 +87,7 @@ jobs:
         with:
           context: ./docker/${{ matrix.container.dir }}
           push: false
+          load: true
           platforms: ${{ join(matrix.container.platforms, ',') }}
           tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }}
 
