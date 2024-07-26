@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi9/ubi:9.4-1181
 
-COPY Caddyfile /etc/caddy/Caddyfile
 COPY entrypoint.sh /entrypoint.sh
+COPY Caddyfile /etc/caddy/Caddyfile
 
 RUN yum upgrade -y; \
     yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm; \
