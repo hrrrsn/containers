@@ -115,7 +115,7 @@ jobs:
           latest_tag="${image_name}:latest"
 
           docker tag $temp_tag $base_image_tag
-          docker tag $temp_tag $latest_tag
+          docker tag $temp_tag ${image_name}:latest
 
           if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
             dynamic_tag="${image_name}:${{ env.DYNAMIC_TAG }}"
@@ -123,6 +123,8 @@ jobs:
             docker tag $temp_tag $dynamic_tag
             docker tag $temp_tag $dynamic_base_tag
           fi
+
+          docker image ls
 
           docker rmi $temp_tag
           docker push $latest_tag
