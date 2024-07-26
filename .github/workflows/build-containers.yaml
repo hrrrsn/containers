@@ -86,9 +86,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./docker/${{ matrix.container.dir }}
-          push: false
+          load: true
           platforms: ${{ join(matrix.container.platforms, ',') }}
-          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_number }}-${{ env.COMMIT_HASH }}
 
       - name: Determine dynamic tag
         id: dynamic-tag
@@ -110,7 +110,7 @@ jobs:
       - name: Tag and push Docker images
         run: |
           image_name="ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}"
-          temp_tag="${image_name}:temp"
+          temp_tag="${image_name}:${{ github.run_number }}-${{ env.COMMIT_HASH }}"
           base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
           latest_tag="${image_name}:latest"
 
@@ -126,7 +126,7 @@ jobs:
 
           docker image ls
 
-          docker rmi $temp_tag
+          # docker rmi $temp_tag
           docker push $latest_tag
 
       - name: Clean up Docker images
