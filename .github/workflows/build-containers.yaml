@@ -12,7 +12,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 2
 
@@ -24,51 +24,59 @@ jobs:
             image_name=$(grep 'FROM' ./docker/$dir/Dockerfile | awk '{print $2}' | head -n 1)
             manifest=$(docker manifest inspect $image_name || echo "{}")
             has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
-            archs='"amd64"'
+            archs='"linux/amd64"'
             if [[ $has_arm64 == "true" ]]; then
-              archs='"amd64", "arm64"'
+              archs='"linux/amd64", "linux/arm64"'
             fi
-            matrix_entry="{\"dir\": \"$dir\", \"arch\": [$archs]}"
+            matrix_entry="{\"dir\": \"$dir\", \"platforms\": [$archs]}"
             matrix="${matrix}${matrix:+,}${matrix_entry}"
           done
           matrix="{\"include\": [$matrix]}"
           echo "Matrix: $matrix"
           echo "::set-output name=matrix::$matrix"
-        
+
   build:
     needs: prepare-matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.prepare-matrix.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
     permissions:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v2
 
       - name: Extract base image tag from Dockerfile
+        id: extract-info
         run: |
-          echo "BASE_IMAGE_TAG=$(grep FROM docker/${{ matrix.dir }}/Dockerfile | awk -F':' '{print $2}' | awk -F'@' '{print $1}')" >> $GITHUB_ENV
-          echo "COMMIT_HASH=$(grep FROM docker/${{ matrix.dir }}/Dockerfile | cut -d':' -f3 | cut -c 1-8)" >> $GITHUB_ENV
+          base_image=$(grep FROM docker/${{ matrix.dir }}/Dockerfile | awk '{print $2}' | head -n 1)
+          base_image_tag=$(echo "$base_image" | awk -F':' '{print $2}' | awk -F'@' '{print $1}')
+          if [ -z "$base_image_tag" ]; then
+            base_image_tag="latest"
+          fi
+          echo "BASE_IMAGE_TAG=$base_image_tag" >> $GITHUB_ENV
+          echo "BASE_IMAGE_TAG: $base_image_tag"
+          commit_hash=$(echo "$base_image" | awk -F'@' '{print $2}' | cut -c 1-8)
+          echo "COMMIT_HASH=$commit_hash" >> $GITHUB_ENV
+          echo "COMMIT_HASH: $commit_hash"
 
-      - name: Docker Login
-        uses: docker/login-action@v3.2.0
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        uses: docker/build-push-action@v5.4.0
+        uses: docker/build-push-action@v3
         with:
           context: ./docker/${{ matrix.dir }}
           push: false
-          load: true
-          platforms: ${{ matrix.platforms }}
+          platforms: ${{ join(matrix.platforms, ',') }}
           tags: ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }}
 
       - name: Determine Tag
@@ -82,18 +90,32 @@ jobs:
             echo "::set-output name=dynamic_tag::$tag"
             echo "Tag: $tag"
             docker rm -f $container_id
+          else
+            echo "::set-output name=dynamic_tag::"
           fi
 
       - name: Push Docker image
         run: |
-          if [[ -f ./docker/${{ matrix.dir }}/tag-stream ]]; then
-            docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}
-            docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ steps.dynamic-tag.outputs.dynamic_tag }}-${{ env.BASE_IMAGE_TAG }}
+          image_name="ghcr.io/${{ github.repository }}/${{ matrix.dir }}"
+          run_id_tag="${image_name}:${{ github.run_id }}"
+          base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
+          latest_tag="${image_name}:latest"
+
+          if [[ -n "${{ steps.dynamic-tag.outputs.dynamic_tag }}" ]]; then
+            dynamic_tag="${image_name}:${{ steps.dynamic-tag.outputs.dynamic_tag }}"
+            dynamic_base_tag="${image_name}:${{ steps.dynamic-tag.outputs.dynamic_tag }}-${{ env.BASE_IMAGE_TAG }}"
+            docker tag $run_id_tag $dynamic_tag
+            docker tag $run_id_tag $dynamic_base_tag
+            docker push $dynamic_tag
+            docker push $dynamic_base_tag
           fi
 
-          docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ env.BASE_IMAGE_TAG }}
-          docker tag ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }} ghcr.io/${{ github.repository }}/${{ matrix.dir }}:latest
+          docker tag $run_id_tag $base_image_tag
+          docker tag $run_id_tag $latest_tag
+          docker rmi $run_id_tag
 
-          docker rmi ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }}
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}/${{ matrix.dir }} --all-tags
+          docker push $base_image_tag
+          docker push $latest_tag
+
+      - name: Clean up Docker images
+        run: docker image prune -f
