@@ -86,7 +86,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./docker/${{ matrix.container.dir }}
-          push: true
+          push: false
           platforms: ${{ join(matrix.container.platforms, ',') }}
           tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp
 
