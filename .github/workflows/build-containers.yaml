@@ -75,6 +75,22 @@ jobs:
           echo "COMMIT_HASH=$commit_hash" >> $GITHUB_ENV
           echo "COMMIT_HASH: $commit_hash"
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker/${{ matrix.container.dir }}
+          push: false
+          load: true
+          platforms: ${{ join(matrix.container.platforms, ',') }}
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }}
+
       - name: Determine dynamic tag
         id: dynamic-tag
         run: |
@@ -88,37 +104,31 @@ jobs:
             docker rm -f $container_id
           else
             echo "DYNAMIC_TAG=" >> $GITHUB_ENV
-          fi
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./docker/${{ matrix.container.dir }}
-          push: true
-          platforms: ${{ join(matrix.container.platforms, ',') }}
-          tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:latest
-            ${{ env.DYNAMIC_TAG }}-${{ env.BASE_IMAGE_TAG }}
-
-      - name: Push additional tags
-        if: env.DYNAMIC_TAG != ''
+      - name: Tag and push Docker images
         run: |
           image_name="ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}"
-          dynamic_tag="${image_name}:${{ env.DYNAMIC_TAG }}"
-          dynamic_base_tag="${dynamic_tag}-${{ env.BASE_IMAGE_TAG }}"
-          docker tag ${image_name}:${{ github.run_id }} $dynamic_tag
-          docker tag ${image_name}:${{ github.run_id }} $dynamic_base_tag
-          docker push $dynamic_tag
-          docker push $dynamic_base_tag
+          run_id_tag="${image_name}:${{ github.run_id }}"
+          base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
+          latest_tag="${image_name}:latest"
+
+          docker tag $run_id_tag $base_image_tag
+          docker tag $run_id_tag $latest_tag
+
+          if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
+            dynamic_tag="${image_name}:${{ env.DYNAMIC_TAG }}"
+            dynamic_base_tag="${image_name}:${{ env.DYNAMIC_TAG }}-${{ env.BASE_IMAGE_TAG }}"
+            docker tag $run_id_tag $dynamic_tag
+            docker tag $run_id_tag $dynamic_base_tag
+          fi
+
+          docker push $run_id_tag
+          docker push $base_image_tag
+          docker push $latest_tag
+
+          if [[ -n "${{ env.DYNAMIC_TAG }}" ]]; then
+            docker push $dynamic_tag
+            docker push $dynamic_base_tag
 
       - name: Clean up Docker images
         run: docker image prune -f
