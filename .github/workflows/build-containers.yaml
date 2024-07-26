@@ -5,6 +5,11 @@ on:
     branches: [ main ]
     paths:
       - 'docker/**'
+  workflow_dispatch:
+    inputs:
+      container:
+        description: 'Container directory to build'
+        required: false
 
 jobs:
   prepare-matrix:
@@ -19,19 +24,24 @@ jobs:
       - name: Prepare and Set Matrix
         id: set-matrix
         run: |
-          matrix=""
-          for dir in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docker/' | awk -F/ '{print $2}' | uniq); do
+          if [[ "${{ github.event.inputs.container }}" != "" ]]; then
+            dirs="${{ github.event.inputs.container }}"
+          else
+            dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docker/' | awk -F/ '{print $2}' | uniq)
+          fi
+          matrix_entries=()
+          for dir in $dirs; do
             image_name=$(grep 'FROM' ./docker/$dir/Dockerfile | awk '{print $2}' | head -n 1)
             manifest=$(docker manifest inspect $image_name || echo "{}")
             has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
-            archs='"linux/amd64"'
+            archs='["linux/amd64"]'
             if [[ $has_arm64 == "true" ]]; then
-              archs='"linux/amd64", "linux/arm64"'
+              archs='["linux/amd64", "linux/arm64"]'
             fi
-            matrix_entry="{\"dir\": \"$dir\", \"platforms\": [$archs]}"
-            matrix="${matrix}${matrix:+,}${matrix_entry}"
+            matrix_entry="{\"dir\": \"$dir\", \"platforms\": $archs}"
+            matrix_entries+=("$matrix_entry")
           done
-          matrix="{\"include\": [$matrix]}"
+          matrix="{\"include\": [$(IFS=,; echo "${matrix_entries[*]}")]}"
           echo "Matrix: $matrix"
           echo "::set-output name=matrix::$matrix"
 
