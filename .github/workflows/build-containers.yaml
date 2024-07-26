@@ -50,7 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
+      matrix:
+        container: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
     permissions:
       contents: read
       packages: write
@@ -63,7 +64,7 @@ jobs:
       - name: Extract base image tag from Dockerfile
         id: extract-info
         run: |
-          base_image=$(grep FROM docker/${{ matrix.dir }}/Dockerfile | awk '{print $2}' | head -n 1)
+          base_image=$(grep FROM docker/${{ matrix.container.dir }}/Dockerfile | awk '{print $2}' | head -n 1)
           base_image_tag=$(echo "$base_image" | awk -F':' '{print $2}' | awk -F'@' '{print $1}')
           if [ -z "$base_image_tag" ]; then
             base_image_tag="latest"
@@ -84,17 +85,17 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v3
         with:
-          context: ./docker/${{ matrix.dir }}
+          context: ./docker/${{ matrix.container.dir }}
           push: false
-          platforms: ${{ join(matrix.platforms, ',') }}
-          tags: ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }}
+          platforms: ${{ join(matrix.container.platforms, ',') }}
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }}
 
       - name: Determine Tag
         id: dynamic-tag
         run: |
-          if [[ -f ./docker/${{ matrix.dir }}/tag-stream ]]; then
-            tag_command=$(cat ./docker/${{ matrix.dir }}/tag-stream)
-            container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.dir }}:${{ github.run_id }})
+          if [[ -f ./docker/${{ matrix.container.dir }}/tag-stream ]]; then
+            tag_command=$(cat ./docker/${{ matrix.container.dir }}/tag-stream)
+            container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ github.run_id }})
             docker start $container_id
             tag=$(docker exec $container_id $tag_command)
             echo "::set-output name=dynamic_tag::$tag"
@@ -106,7 +107,7 @@ jobs:
 
       - name: Push Docker image
         run: |
-          image_name="ghcr.io/${{ github.repository }}/${{ matrix.dir }}"
+          image_name="ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}"
           run_id_tag="${image_name}:${{ github.run_id }}"
           base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
           latest_tag="${image_name}:latest"
