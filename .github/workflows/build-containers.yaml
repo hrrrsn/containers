@@ -94,6 +94,7 @@ jobs:
         id: dynamic-tag
         run: |
           if [[ -f ./docker/${{ matrix.container.dir }}/tag-stream ]]; then
+            echo "tag-stream file found, determining dynamic tag..."
             tag_command=$(cat ./docker/${{ matrix.container.dir }}/tag-stream)
             container_id=$(docker create ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:temp)
             docker start $container_id
@@ -102,6 +103,7 @@ jobs:
             echo "DYNAMIC_TAG: $tag"
             docker rm -f $container_id
           else
+            echo "No tag-stream file found, skipping dynamic tag."
             echo "DYNAMIC_TAG=" >> $GITHUB_ENV
 
       - name: Tag and push Docker images
@@ -110,8 +112,6 @@ jobs:
           temp_tag="${image_name}:temp"
           base_image_tag="${image_name}:${{ env.BASE_IMAGE_TAG }}"
           latest_tag="${image_name}:latest"
-
-          docker pull $temp_tag
 
           docker tag $temp_tag $base_image_tag
           docker tag $temp_tag $latest_tag
