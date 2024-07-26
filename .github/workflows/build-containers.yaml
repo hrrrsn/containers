@@ -94,4 +94,3 @@ jobs:
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ github.run_number }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-$(date +%Y%m%d)
