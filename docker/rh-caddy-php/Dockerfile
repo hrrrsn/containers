@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.description="Red Hat Universal Base Image with Ca
 COPY entrypoint.sh /entrypoint.sh
 COPY Caddyfile /etc/caddy/Caddyfile
 
-RUN yum upgrade -y; \
-    yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm; \
+RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm; \
+    yum upgrade -y; \
     yum module install php:8.2/common -y; \
     yum install -y rsync caddy procps-ng gettext php-fpm php-cli php-gd php-intl php-mysqlnd php-pdo php-pgsql php-xml php-opcache; \
     yum clean all -y; \
