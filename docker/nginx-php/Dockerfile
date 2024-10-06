@@ -7,8 +7,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY entry.sh /entry.sh
 
 RUN yum upgrade -y; \
-    yum install -y rsync nginx procps gettext; \
-    yum install -y php-fpm php-cli php-gd php-intl php-mysqlnd php-pdo php-pgsql php-xml php-opcache; \
+    yum install -y rsync nginx procps gettext php-fpm php-cli php-gd php-intl php-mysqlnd php-pdo php-pgsql php-xml php-opcache; \
     yum clean all -y; \
     mkdir -p /run/php-fpm/; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
