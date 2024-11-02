@@ -1,4 +1,4 @@
-FROM fedora:42@sha256:bf1b02ad65c666bb841fb1738e5dd4e0381b343198e64a26cce54e0a7179f800
+FROM fedora:42@sha256:70d5934128fe1b1abc97750dc358dad9cf499c11059f0ed720872fedcc4880d1
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Fedora image with Nginx and PHP"
