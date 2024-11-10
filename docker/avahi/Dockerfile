@@ -8,7 +8,6 @@ RUN microdnf upgrade -y; \
     microdnf clean all -y
 
 COPY avahi-daemon.conf /etc/avahi/avahi-daemon.conf
-
 EXPOSE 5353/udp
 
 ENTRYPOINT ["/usr/sbin/avahi-daemon", "--no-drop-root"]
