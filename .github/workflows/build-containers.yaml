@@ -90,7 +90,6 @@ jobs:
           platforms: ${{ join(matrix.container.platforms, ',') }}
           tags: |
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:latest
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:$(date +'%Y%m%d')
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.COMMIT_HASH }}
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ env.COMMIT_HASH }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}-${{ github.run_number }}
