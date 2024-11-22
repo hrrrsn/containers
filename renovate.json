@@ -5,6 +5,11 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": ["docker.io/library/fedora"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
       "matchDatasources": ["docker"],
       "automerge": true,
       "ignoreTests": true

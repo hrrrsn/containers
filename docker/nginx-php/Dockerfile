@@ -1,4 +1,4 @@
-FROM fedora:42@sha256:70d5934128fe1b1abc97750dc358dad9cf499c11059f0ed720872fedcc4880d1
+FROM docker.io/library/fedora:41@sha256:3ec60eb34fa1a095c0c34dd37cead9fd38afb62612d43892fcf1d3425c32bc1e
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Fedora image with Nginx and PHP"
@@ -19,6 +19,10 @@ RUN yum upgrade -y; \
     chmod -R g=u /etc/nginx /run /entry.sh; \
     chmod +x /entry.sh; \
     echo "<?php phpinfo(); ?>" > /usr/share/nginx/html/phpinfo.php
+
+RUN for dir in /etc/nginx /usr/share/nginx; do \
+        chgrp -R 0 $dir && chmod -R g=u $dir; \
+    done
 
 EXPOSE 8080
 
