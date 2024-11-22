@@ -72,7 +72,7 @@ jobs:
             base_image_tag="latest"
           fi
           echo "BASE_IMAGE_TAG=$base_image_tag" >> $GITHUB_ENV
-          echo "DATE_TAG=$(TZ='Pacific/Auckland' date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "DATE_TAG=$(TZ='Pacific/Auckland' date +'%Y.%m.%d')" >> $GITHUB_ENV
           commit_hash=$(git rev-parse HEAD | cut -c 1-8)
           echo "COMMIT_HASH=$commit_hash" >> $GITHUB_ENV
       
@@ -92,5 +92,5 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:latest
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.DATE_TAG }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.COMMIT_HASH }}
             ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
+            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.COMMIT_HASH }}
