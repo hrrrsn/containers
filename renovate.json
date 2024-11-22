@@ -5,14 +5,15 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["docker.io/library/fedora"],
+      "matchPackagePatterns": ["^docker.io/library/fedora$"],
       "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {
       "matchDatasources": ["docker"],
       "automerge": true,
-      "ignoreTests": true
+      "ignoreTests": true,
+      "stabilityDays": 7
     }
   ]
 }
