@@ -1,0 +1,9 @@
+FROM fedora:42@sha256:70d5934128fe1b1abc97750dc358dad9cf499c11059f0ed720872fedcc4880d1
+
+LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
+LABEL org.opencontainers.image.description="Fedora image with Node.js and Git"
+
+RUN yum -y upgrade && \
+    yum -y install \
+    vim nano less wget rsync nodejs npm git openssh-clients \
+    && yum clean all
