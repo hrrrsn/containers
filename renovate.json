@@ -11,7 +11,7 @@
     },
     {
       "matchDatasources": ["docker"],
-      "automerge": true,
+      "automerge": false,
       "ignoreTests": true,
       "stabilityDays": 7
     }

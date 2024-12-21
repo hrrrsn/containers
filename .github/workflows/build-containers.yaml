@@ -2,48 +2,61 @@ name: Build containers
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'docker/**'
+      - 'containers/**'
   workflow_dispatch:
     inputs:
       container:
         description: 'Container directory to build'
         required: false
+        type: string
 
 jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+    
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       
-      - name: Prepare and Set Matrix
+      - name: Prepare build matrix
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.container }}" != "" ]]; then
+          # Determine which containers to build
+          if [[ -n "${{ github.event.inputs.container }}" ]]; then
             dirs="${{ github.event.inputs.container }}"
           else
-            dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docker/' | awk -F/ '{print $2}' | uniq)
+            dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | \
+                  grep 'containers/' | awk -F/ '{print $2}' | uniq)
           fi
           
+          # Build matrix entries
           matrix_entries=()
           for dir in $dirs; do
-            image_name=$(grep 'FROM' ./docker/$dir/Dockerfile | awk '{print $2}' | head -n 1)
+            # Check base image for multi-arch support
+            image_name=$(grep 'FROM' ./containers/$dir/Containerfile | awk '{print $2}' | head -n 1)
             manifest=$(docker manifest inspect $image_name || echo "{}")
-            has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | grep -q 'arm64' && echo 'true' || echo 'false')
+            
+            # Check if ARM64 is supported
+            has_arm64=$(echo "$manifest" | jq -r '.manifests[]?.platform.architecture // empty' | \
+                       grep -q 'arm64' && echo 'true' || echo 'false')
+            
+            # Set platforms based on base image support
             archs='["linux/amd64"]'
             if [[ $has_arm64 == "true" ]]; then
               archs='["linux/amd64", "linux/arm64"]'
             fi
+            
             matrix_entry="{\"dir\": \"$dir\", \"platforms\": $archs}"
             matrix_entries+=("$matrix_entry")
           done
+          
+          # Create final matrix
           matrix="{\"include\": [$(IFS=,; echo "${matrix_entries[*]}")]}"
-          echo "Matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   build:
@@ -63,18 +76,21 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Extract base image tag and set date
-        id: extract-info
+      - name: Extract metadata
+        id: metadata
         run: |
-          base_image=$(grep FROM docker/${{ matrix.container.dir }}/Dockerfile | awk '{print $2}' | head -n 1)
-          base_image_tag=$(echo "$base_image" | awk -F':' '{print $2}' | awk -F'@' '{print $1}')
-          if [ -z "$base_image_tag" ]; then
-            base_image_tag="latest"
-          fi
-          echo "BASE_IMAGE_TAG=$base_image_tag" >> $GITHUB_ENV
-          echo "DATE_TAG=$(TZ='Pacific/Auckland' date +'%Y.%m.%d')" >> $GITHUB_ENV
-          commit_hash=$(git rev-parse HEAD | cut -c 1-8)
-          echo "COMMIT_HASH=$commit_hash" >> $GITHUB_ENV
+          # Get base image tag
+          base_image=$(grep FROM containers/${{ matrix.container.dir }}/Containerfile | \
+                      awk '{print $2}' | head -n 1)
+          base_tag=$(echo "$base_image" | awk -F':' '{print $2}' | awk -F'@' '{print $1}')
+          echo "BASE_IMAGE_TAG=${base_tag:-latest}" >> $GITHUB_ENV
+          
+          # Generate date and commit tags
+          echo "DATE_TAG=$(TZ='Pacific/Auckland' date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          
+          # Set image name
+          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}" >> $GITHUB_ENV
       
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -83,14 +99,54 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Build and push Docker image
+      - name: Build single-arch image for testing
         uses: docker/build-push-action@v6
         with:
-          context: ./docker/${{ matrix.container.dir }}
-          push: true
+          context: ./containers/${{ matrix.container.dir }}
+          file: ./containers/${{ matrix.container.dir }}/Containerfile
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:latest
+      
+      - name: Run container tests
+        if: hashFiles(format('./containers/{0}/test.sh', matrix.container.dir)) != ''
+        run: |
+          echo "Running container tests..."
+          timeout 30s docker run --rm \
+            -v $(pwd)/containers/${{ matrix.container.dir }}:/mnt \
+            --entrypoint /mnt/test.sh \
+            ${{ env.IMAGE_NAME }}:latest
+      
+      - name: Generate image tags
+        id: tags
+        run: |
+          tags="latest"
+          
+          # Get custom tags if tags.sh exists
+          if [ -f ./containers/${{ matrix.container.dir }}/tags.sh ]; then
+            chmod +x ./containers/${{ matrix.container.dir }}/tags.sh
+            custom_tags=$(docker run --rm \
+                         -v $(pwd)/containers/${{ matrix.container.dir }}:/mnt \
+                         --entrypoint /mnt/tags.sh \
+                         ${{ env.IMAGE_NAME }}:latest | tr '\n' ',' | sed 's/,$//')
+            
+            echo "Using custom tags: $custom_tags"
+            tags="$tags,$custom_tags"
+          else
+            # Use default tags
+            default_tags="${{ env.BASE_IMAGE_TAG }},${{ env.BASE_IMAGE_TAG }}-${{ env.DATE_TAG }}"
+            echo "Using default tags: $default_tags"
+            tags="$tags,$default_tags"
+          fi
+          
+          # Format tags for build-push-action
+          tags=$(echo "$tags" | tr ',' '\n' | sed "s|^|${{ env.IMAGE_NAME }}:|" | paste -sd,)
+          echo "tags=$tags" >> $GITHUB_OUTPUT
+      
+      - name: Build and push multi-arch images
+        uses: docker/build-push-action@v6
+        with:
+          context: ./containers/${{ matrix.container.dir }}
+          file: ./containers/${{ matrix.container.dir }}/Containerfile
           platforms: ${{ join(matrix.container.platforms, ',') }}
-          tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:latest
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.DATE_TAG }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.BASE_IMAGE_TAG }}
-            ghcr.io/${{ github.repository }}/${{ matrix.container.dir }}:${{ env.COMMIT_HASH }}
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
