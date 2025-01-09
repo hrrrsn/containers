@@ -5,15 +5,10 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": ["^fedora$"],
-      "matchUpdateTypes": ["major"],
-      "automerge": false
-    },
-    {
       "matchDatasources": ["docker"],
-      "automerge": false,
+      "automerge": true,
       "ignoreTests": true,
-      "stabilityDays": 7
+      "stabilityDays": 1
     }
   ]
 }
