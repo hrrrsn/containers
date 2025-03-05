@@ -1,0 +1,25 @@
+FROM registry.access.redhat.com/ubi9/podman:9.5-1739777467@sha256:1358509a561a856848c2dd9c9ad806a872b4ef83494b14150a97f08dd0fd204c
+
+COPY start.sh start.sh
+
+RUN yum upgrade -y && \
+    yum install -y wget jq rsync && \
+
+    curl https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/v//' > /etc/runner-version && \
+    RUNNER_VERSION=$(cat /etc/runner-version) && \
+
+    mkdir /opt/actions-runner -p && \
+    cd /opt/actions-runner && \
+    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
+    tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
+    rm -f ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
+    /opt/actions-runner/bin/installdependencies.sh && \
+
+    yum clean all -y && \
+    chmod +x /start.sh && \
+
+    for dir in /opt/actions-runner; do \
+        chgrp -R 0 $dir && chmod -R g=u $dir; \
+    done
+
+ENTRYPOINT ["./start.sh"]
