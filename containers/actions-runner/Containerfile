@@ -18,6 +18,8 @@ RUN yum upgrade -y && \
     yum clean all -y && \
     chmod +x /start.sh && \
 
+    sed -i 's/driver = "overlay"/driver = "vfs"/g' /etc/containers/storage.conf && \
+
     for dir in /opt/actions-runner; do \
         chgrp -R 0 $dir && chmod -R g=u $dir; \
     done
