@@ -21,7 +21,7 @@ RUN yum upgrade -y && \
     sed -i 's/driver = "overlay"/driver = "vfs"/g' /etc/containers/storage.conf && \
 
     for dir in /opt/actions-runner; do \
-        chgrp -R 0 $dir && chmod -R g=u $dir; \
+        chown -R podman:podman $dir; \
     done
 
 ENTRYPOINT ["./start.sh"]
