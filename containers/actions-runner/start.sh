@@ -6,7 +6,7 @@ echo "----------------------------------------"
 
 cd /opt/actions-runner
 
-REG_TOKEN=$(curl -X POST -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${REPOSITORY}/actions/runners/registration-token | jq .token --raw-output)
+REG_TOKEN=$(curl -X POST -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${REPO}/actions/runners/registration-token | jq .token --raw-output)
 
 ./config.sh --url https://github.com/${REPO} --token ${REG_TOKEN} --disableupdate --unattended
 
