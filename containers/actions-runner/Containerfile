@@ -22,8 +22,10 @@ RUN yum upgrade -y && \
 
     for dir in /opt/actions-runner; do \
         chown -R podman:podman $dir; \
-    done
+    done && \
 
-    rm -f /etc/rhsm-host
+    rm -f /etc/rhsm-host && \
+    
+    yum clean all -y
 
 ENTRYPOINT ["./start.sh"]
