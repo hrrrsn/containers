@@ -15,7 +15,8 @@
     },
     {
       "matchDepNamePrefixes": ["registry.access.redhat.com"],
-      "automerge": true
+      "automerge": true,
+      "matchDatasources": ["docker"]
     },
     {
       "matchDepNames": ["freshrss/freshrss"],
