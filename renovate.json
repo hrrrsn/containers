@@ -14,9 +14,8 @@
       "separateMajorMinor": true
     },
     {
-      "matchDepNamePrefixes": ["registry.access.redhat.com"],
-      "automerge": true,
-      "matchDatasources": ["docker"]
+      "matchDepNames": ["registry.access.redhat.com/ubi9/ubi"],
+      "automerge": true
     },
     {
       "matchDepNames": ["freshrss/freshrss"],
