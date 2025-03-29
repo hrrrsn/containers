@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora:41@sha256:a19f67eb57fd94b77ada7fc66d9aab4208d06f3ce80956c8850fdbc6b1ffa126
+FROM quay.io/fedora/fedora:41@sha256:b84605769d5a51bf3fe3e3cba259a2091252d3e87c2693c772eafa974a860ff6
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Fedora image with Caddy and PHP"
