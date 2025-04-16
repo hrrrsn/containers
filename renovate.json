@@ -11,7 +11,8 @@
       "automerge": false,
       "ignoreTests": true,
       "separateMinorPatch": true,
-      "separateMajorMinor": true
+      "separateMajorMinor": true,
+      "separateMultipleMajor": true
     },
     {
       "matchDepNames": ["registry.access.redhat.com/ubi9/ubi"],
