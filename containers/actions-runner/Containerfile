@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/podman:9.5-1741858495@sha256:4704931a5679333f329325de58296fa5651f30a2b4c35cf21d0e2b36c316acc3
+FROM registry.access.redhat.com/ubi9/podman:9.5-1744115919@sha256:5ba9c195cb227e540c268db85580d52a3e9cf91a90aada6fc1576373ccb301d2
 
 COPY start.sh start.sh
 
