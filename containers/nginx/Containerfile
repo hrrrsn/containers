@@ -9,6 +9,7 @@ COPY php.ini-development /etc/php.ini
 
 RUN dnf upgrade -y && \
     dnf install -y \
+    rsync \
     nginx \
     procps \
     gettext \
