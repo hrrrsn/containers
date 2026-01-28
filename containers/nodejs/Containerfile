@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora:43@sha256:d47aed1ee2ec5de80f231089188c0033616860cdb9935c7a4d6a0694adc77032
+FROM quay.io/fedora/fedora:44@sha256:1ebe178a56b6bef4e5dbe770e6a78502187686a980c088156997d6d4bf35d5ee
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Fedora image with Node.js and Git"
