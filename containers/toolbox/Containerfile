@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora:43@sha256:78864f98cc2fd1287e92abd2ab2264c23462c3b2e89ffab4f2c1f76219a70f96
+FROM quay.io/fedora/fedora:44@sha256:e051ff3dbd1191d3eeb7370a8f601fbf3c4adafaa26dd1b5690bd1ab0f97f3af
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Fedora image with useful utilities"
