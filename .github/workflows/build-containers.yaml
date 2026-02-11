@@ -100,7 +100,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build single-arch image for testing
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        uses: docker/build-push-action@601a80b39c9405e50806ae38af30926f9d957c47 # v6
         with:
           context: ./containers/${{ matrix.container.dir }}
           file: ./containers/${{ matrix.container.dir }}/Containerfile
@@ -143,7 +143,7 @@ jobs:
           echo "tags=$tags" >> $GITHUB_OUTPUT
       
       - name: Build and push multi-arch images
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        uses: docker/build-push-action@601a80b39c9405e50806ae38af30926f9d957c47 # v6
         with:
           context: ./containers/${{ matrix.container.dir }}
           file: ./containers/${{ matrix.container.dir }}/Containerfile
