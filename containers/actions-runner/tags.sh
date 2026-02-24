@@ -5,6 +5,7 @@ date=$(date +%Y%m%d)
 runner=$(cat /etc/runner-version)
 el=$(echo $VERSION_ID)
 
-echo $el-$runner
 echo $runner
-echo $el-$runner-$date
+echo $runner-$el
+echo $runner-$el-$date
+echo $(date +%Y-%m-%d)
