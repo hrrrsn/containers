@@ -1,8 +1,12 @@
-FROM registry-cdn.hpg.nz/redhat/ubi9/podman:9.5-1746524609@sha256:17a4e3451eed24b9c9acb03489bc55cb9288f8e172b32d7d568d04e6333fa002
+FROM registry-cdn.hpg.nz/redhat/ubi10/podman:10.0-1745506165
 
 COPY start.sh start.sh
 
 RUN yum install -y wget jq rsync git make nodejs procps-ng && \
+
+    echo -e '[almalinux-crb]\nname=AlmaLinux 10 CRB\nbaseurl=https://repo.almalinux.org/almalinux/10/CRB/x86_64/os/\nenabled=0\ngpgcheck=0' > /etc/yum.repos.d/almalinux-crb.repo && \
+    yum install -y --enablerepo=almalinux-crb lttng-ust && \
+    rm -f /etc/yum.repos.d/almalinux-crb.repo && \
 
     curl https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/v//' > /etc/runner-version && \
     RUNNER_VERSION=$(cat /etc/runner-version) && \
@@ -16,8 +20,6 @@ RUN yum install -y wget jq rsync git make nodejs procps-ng && \
 
     yum clean all -y && \
     chmod +x /start.sh && \
-
-    sed -i 's/driver = "overlay"/driver = "vfs"/g' /etc/containers/storage.conf && \
 
     for dir in /home/podman/actions-runner; do \
         chown -R podman:podman $dir; \
