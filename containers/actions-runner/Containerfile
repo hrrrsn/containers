@@ -4,18 +4,20 @@ COPY start.sh start.sh
 
 RUN yum install -y wget jq rsync git make nodejs procps-ng && \
 
-    echo -e '[almalinux-crb]\nname=AlmaLinux 10 CRB\nbaseurl=https://repo.almalinux.org/almalinux/10/CRB/x86_64/os/\nenabled=0\ngpgcheck=0' > /etc/yum.repos.d/almalinux-crb.repo && \
+    ARCH=$(uname -m) && \
+    echo -e "[almalinux-crb]\nname=AlmaLinux 10 CRB\nbaseurl=https://repo.almalinux.org/almalinux/10/CRB/${ARCH}/os/\nenabled=0\ngpgcheck=0" > /etc/yum.repos.d/almalinux-crb.repo && \
     yum install -y --enablerepo=almalinux-crb lttng-ust && \
     rm -f /etc/yum.repos.d/almalinux-crb.repo && \
 
     curl https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/v//' > /etc/runner-version && \
     RUNNER_VERSION=$(cat /etc/runner-version) && \
+    RUNNER_ARCH=$([ "$ARCH" = "aarch64" ] && echo "arm64" || echo "x64") && \
 
     mkdir -p /home/podman/actions-runner && \
     cd /home/podman/actions-runner && \
-    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
-    tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
-    rm -f ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
+    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz && \
+    tar xzf ./actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz && \
+    rm -f ./actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz && \
     /home/podman/actions-runner/bin/installdependencies.sh && \
 
     yum clean all -y && \
