@@ -30,6 +30,12 @@
       "matchDepNames": ["quay.io/fedora/fedora"],
       "matchUpdateTypes": ["digest"],
       "automerge": true
+    },
+    {
+      "matchDepNames": [
+        "**/redhat/**"
+      ],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(?:-(?<patch>\\d+))?$"
     }
   ]
 }
