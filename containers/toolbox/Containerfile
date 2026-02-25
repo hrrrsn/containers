@@ -12,7 +12,7 @@ RUN yum -y upgrade && \
         bash-completion vim nano less \
         # Network
         wget mtr openssh-clients net-tools rsync nmap httpie nc \
-        iputils iperf3 tcpdump traceroute ncat telnet bind-utils \
+        iputils iperf3 tcpdump traceroute ncat telnet bind-utils rclone \
         # System
         procps-ng lsof fio jq git zip unzip stress \
         perf psmisc hostname iproute sysstat iotop \
