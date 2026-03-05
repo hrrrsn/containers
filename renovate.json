@@ -32,6 +32,11 @@
       "automerge": true
     },
     {
+      "matchDepNames": ["**/redhat/ubi10/**"],
+      "matchUpdateTypes": ["digest", "minor"],
+      "automerge": true
+    },
+    {
       "matchDepNames": [
         "**/redhat/**"
       ],
