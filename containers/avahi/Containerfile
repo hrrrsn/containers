@@ -1,4 +1,4 @@
-FROM registry-cdn.hpg.nz/quay/fedora/fedora:43
+FROM registry-cdn.hpg.nz/quay/fedora/fedora:43@sha256:2e8a353c80d70b21567dcda8996a1eca6579d08907ee98f87bde65dce4b20b58
 
 # Toolbox container
 RUN yum -y install wireguard-tools avahi avahi-tools && \
