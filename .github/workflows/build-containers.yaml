@@ -47,7 +47,7 @@ jobs:
             
             # Set platforms based on base image support
             archs='["linux/amd64"]'
-            if [[ $has_arm64 == "true" ]]; then
+            if [[ $has_arm64 == "true" && "$dir" != "actions-runner" ]]; then
               archs='["linux/amd64", "linux/arm64"]'
             fi
             
