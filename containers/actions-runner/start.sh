@@ -8,7 +8,7 @@ cd /home/podman/actions-runner
 
 REG_TOKEN=$(curl -X POST -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${REPO}/actions/runners/registration-token | jq .token --raw-output)
 
-./config.sh --url https://github.com/${REPO} --token ${REG_TOKEN} --disableupdate --unattended
+./config.sh --url https://github.com/${REPO} --token ${REG_TOKEN} --disableupdate --unattended --ephemeral
 
 cleanup() {
     echo "Removing runner..."
