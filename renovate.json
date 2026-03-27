@@ -33,7 +33,7 @@
     },
     {
       "matchDepNames": ["**/redhat/ubi10/**"],
-      "matchUpdateTypes": ["digest", "minor"],
+      "matchUpdateTypes": ["digest", "minor", "patch"],
       "automerge": true
     },
     {
