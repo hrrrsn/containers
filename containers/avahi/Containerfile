@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora:43@sha256:e43db0af14f5a44939d644204b4238699c42e8b298f15321d2f03b206f72426c
+FROM quay.io/fedora/fedora:45@sha256:8e17642e777a37ce6b68a4174ad2de38f1ffee3fb4bdb77308b2caeb00de72df
 
 # Toolbox container
 RUN yum -y install wireguard-tools avahi avahi-tools && \
