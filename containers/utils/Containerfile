@@ -1,0 +1,7 @@
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1779862102@sha256:7dc60d7777e010c50f5e041ff069112b379c3d5eef2823d20871c67cf663f10c
+
+LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
+LABEL org.opencontainers.image.description="UBI 10 minimal image with jq, rsync, and curl"
+
+RUN microdnf install -y --setopt=install_weak_deps=0 jq rsync curl && \
+    microdnf clean all
