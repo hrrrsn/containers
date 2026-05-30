@@ -1,21 +1,43 @@
-# Build stage
-FROM registry.access.redhat.com/hi/php:8.5.6-fpm-builder AS builder
-
-USER root
-RUN dnf -y install php-gd && dnf clean all
-USER ${CONTAINER_DEFAULT_USER}
-
-
-FROM registry.access.redhat.com/hi/php:8.5.6-fpm
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1779862102
 
 USER root
 
-COPY --from=builder /usr/lib64/php/modules/gd.so   /usr/lib64/php/modules/
-COPY --from=builder /usr/lib64/php/modules/intl.so /usr/lib64/php/modules/
-COPY --from=builder /usr/lib64/php/modules/zip.so  /usr/lib64/php/modules/
+RUN microdnf -y install \
+    php \
+    php-fpm \
+    php-cli \
+    php-opcache \
+    php-mysqlnd \
+    php-gd \
+    php-intl \
+    php-mbstring \
+    php-xml \
+    php-json \
+    php-curl \
+    php-zip \
+    php-bcmath \
+    php-soap \
+    php-process \
+    php-pecl-redis \
+    php-pdo \
+    php-pgsql \
+    shadow-utils \
+ && microdnf clean all
 
-COPY --from=builder /etc/php.d/*gd.ini   /etc/php.d/
-COPY --from=builder /etc/php.d/*intl.ini /etc/php.d/
-COPY --from=builder /etc/php.d/*zip.ini  /etc/php.d/
+RUN sed -ri \
+    -e 's!^listen = .*!listen = 0.0.0.0:9000!' \
+    -e 's!^;?clear_env = .*!clear_env = no!' \
+    /etc/php-fpm.d/www.conf
 
-USER ${CONTAINER_DEFAULT_USER}
+# Make logs container-friendly
+RUN sed -ri \
+    -e 's!^error_log = .*!error_log = /proc/self/fd/2!' \
+    /etc/php-fpm.conf \
+    && sed -ri \
+    -e 's!^;?catch_workers_output = .*!catch_workers_output = yes!' \
+    -e 's!^;?access.log = .*!access.log = /proc/self/fd/2!' \
+    /etc/php-fpm.d/www.conf
+
+EXPOSE 9000
+
+CMD ["/usr/sbin/php-fpm", "-F"]
