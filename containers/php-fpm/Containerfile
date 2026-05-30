@@ -38,6 +38,10 @@ RUN sed -ri \
     -e 's!^;?access.log = .*!access.log = /proc/self/fd/2!' \
     /etc/php-fpm.d/www.conf
 
+RUN mkdir -p /run/php-fpm \
+ && chown -R 0:0 /run/php-fpm \
+ && chmod -R g+rwX /run/php-fpm
+
 EXPOSE 9000
 
 CMD ["/usr/sbin/php-fpm", "-F"]
