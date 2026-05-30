@@ -1,0 +1,21 @@
+# Build stage
+FROM registry.access.redhat.com/hi/php:8.5.6-fpm-builder AS builder
+
+USER root
+RUN dnf -y install php-gd && dnf clean all
+USER ${CONTAINER_DEFAULT_USER}
+
+
+FROM registry.access.redhat.com/hi/php:8.5.6-fpm
+
+USER root
+
+COPY --from=builder /usr/lib64/php/modules/gd.so   /usr/lib64/php/modules/
+COPY --from=builder /usr/lib64/php/modules/intl.so /usr/lib64/php/modules/
+COPY --from=builder /usr/lib64/php/modules/zip.so  /usr/lib64/php/modules/
+
+COPY --from=builder /etc/php.d/*gd.ini   /etc/php.d/
+COPY --from=builder /etc/php.d/*intl.ini /etc/php.d/
+COPY --from=builder /etc/php.d/*zip.ini  /etc/php.d/
+
+USER ${CONTAINER_DEFAULT_USER}

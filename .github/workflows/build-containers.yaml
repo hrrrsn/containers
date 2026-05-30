@@ -38,7 +38,7 @@ jobs:
           matrix_entries=()
           for dir in $dirs; do
             # Check base image for multi-arch support
-            image_name=$(grep 'FROM' ./containers/$dir/Containerfile | awk '{print $2}' | head -n 1)
+            image_name=$(grep 'FROM' ./containers/$dir/Containerfile | awk '{print $2}' | tail -n 1)
             manifest=$(docker manifest inspect $image_name || echo "{}")
             
             # Check if ARM64 is supported
@@ -81,7 +81,7 @@ jobs:
         run: |
           # Get base image tag
           base_image=$(grep FROM containers/${{ matrix.container.dir }}/Containerfile | \
-                      awk '{print $2}' | head -n 1)
+                      awk '{print $2}' | tail -n 1)
           base_tag=$(echo "$base_image" | awk -F':' '{print $2}' | awk -F'@' '{print $1}')
           echo "BASE_IMAGE_TAG=${base_tag:-latest}" >> $GITHUB_ENV
           
