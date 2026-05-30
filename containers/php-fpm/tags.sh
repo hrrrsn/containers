@@ -1,2 +1,2 @@
 #!/bin/bash
-$(php -r 'echo PHP_VERSION;')
+php -r 'echo PHP_VERSION;'
