@@ -21,6 +21,7 @@ RUN microdnf -y install \
     php-pecl-redis \
     php-pdo \
     php-pgsql \
+    php-imagick \
     shadow-utils \
  && microdnf clean all
 
