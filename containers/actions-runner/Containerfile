@@ -1,4 +1,4 @@
-FROM registry-cdn.hpg.nz/redhat/ubi10/podman:10.2-1788196635@sha256:b4b698cf85c16526ee21e93c6be26341e8fe821798790a54f2bed1c06e3a922a
+FROM registry-cdn.hpg.nz/redhat/ubi10/podman:10.2-1788314715@sha256:57b80bc2e000ef2d22e812291ce5a8c6e04fdc9badaca189212ac31ac7126949
 
 COPY start.sh start.sh
 
