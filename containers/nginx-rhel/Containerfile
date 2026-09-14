@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.8-1788939089@sha256:206b65b8ee0f04b992818c9a51b29081b14974630d4850bc358097d0c44ea156
+FROM registry.access.redhat.com/ubi9/ubi:9.8-1789348643@sha256:12b3fafdd3d51cb894196ecf944b1119ff4bc2d390a3a57fd141c3b5f0de9b15
 
 LABEL org.opencontainers.image.source=https://github.com/hrrrsn/containers
 LABEL org.opencontainers.image.description="Red Hat Universal Base Image with Nginx and PHP"
