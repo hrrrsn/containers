@@ -19,6 +19,10 @@
       "automerge": true
     },
     {
+      "matchDepNames": ["registry.access.redhat.com/ubi10/ubi-minimal"],
+      "automerge": true
+    },
+    {
       "matchDepNames": ["freshrss/freshrss"],
       "automerge": true
     },
