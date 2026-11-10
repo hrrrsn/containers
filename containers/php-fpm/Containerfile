@@ -2,6 +2,16 @@ FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1794227009@sha256:f0c7b9a
 
 USER root
 
+# Enable EPEL 10
+RUN microdnf -y install curl ca-certificates \
+    && curl -fSL \
+        https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm \
+        -o /tmp/epel-release.rpm \
+    && rpm -Uvh /tmp/epel-release.rpm \
+    && rm -f /tmp/epel-release.rpm \
+    && microdnf clean all
+
+# Install PHP 8.3 and extensions
 RUN microdnf -y install \
     php \
     php-fpm \
@@ -12,25 +22,24 @@ RUN microdnf -y install \
     php-intl \
     php-mbstring \
     php-xml \
-    php-json \
-    php-curl \
-    php-zip \
     php-bcmath \
     php-soap \
     php-process \
-    php-pecl-redis \
+    php-pecl-redis6 \
+    php-pecl-zip \
     php-pdo \
     php-pgsql \
-    php-imagick \
+    php-pecl-imagick \
     shadow-utils \
- && microdnf clean all
+    && microdnf clean all
 
+# Configure PHP-FPM
 RUN sed -ri \
     -e 's!^listen = .*!listen = 0.0.0.0:9000!' \
     -e 's!^;?clear_env = .*!clear_env = no!' \
     /etc/php-fpm.d/www.conf
 
-# Make logs container-friendly
+# Container-friendly logging
 RUN sed -ri \
     -e 's!^error_log = .*!error_log = /proc/self/fd/2!' \
     /etc/php-fpm.conf \
@@ -39,9 +48,10 @@ RUN sed -ri \
     -e 's!^;?access.log = .*!access.log = /proc/self/fd/2!' \
     /etc/php-fpm.d/www.conf
 
+# Prepare runtime directory
 RUN mkdir -p /run/php-fpm \
- && chown -R 0:0 /run/php-fpm \
- && chmod -R g+rwX /run/php-fpm
+    && chown -R 0:0 /run/php-fpm \
+    && chmod -R g+rwX /run/php-fpm
 
 EXPOSE 9000
 

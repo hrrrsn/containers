@@ -1,0 +1,48 @@
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1794227009@sha256:f0c7b9ae9914fcf183e7c36fc46864903c2d2caf3af327421913ae54b3d29e94
+
+USER root
+
+# Install PHP 8.4 and extensions
+RUN microdnf -y install \
+    php8.4 \
+    php8.4-fpm \
+    php8.4-cli \
+    php8.4-opcache \
+    php8.4-mysqlnd \
+    php8.4-gd \
+    php8.4-intl \
+    php8.4-mbstring \
+    php8.4-xml \
+    php8.4-bcmath \
+    php8.4-soap \
+    php8.4-process \
+    php8.4-pecl-redis6 \
+    php8.4-pecl-zip \
+    php8.4-pdo \
+    php8.4-pgsql \
+    shadow-utils \
+    && microdnf clean all
+
+# Configure PHP-FPM
+RUN sed -ri \
+    -e 's!^listen = .*!listen = 0.0.0.0:9000!' \
+    -e 's!^;?clear_env = .*!clear_env = no!' \
+    /etc/php-fpm.d/www.conf
+
+# Container-friendly logging
+RUN sed -ri \
+    -e 's!^error_log = .*!error_log = /proc/self/fd/2!' \
+    /etc/php-fpm.conf \
+    && sed -ri \
+    -e 's!^;?catch_workers_output = .*!catch_workers_output = yes!' \
+    -e 's!^;?access.log = .*!access.log = /proc/self/fd/2!' \
+    /etc/php-fpm.d/www.conf
+
+# Prepare runtime directory
+RUN mkdir -p /run/php-fpm \
+    && chown -R 0:0 /run/php-fpm \
+    && chmod -R g+rwX /run/php-fpm
+
+EXPOSE 9000
+
+CMD ["/usr/sbin/php-fpm", "-F"]
